@@ -75,7 +75,7 @@ scale-down da aplicação em certos horários.
 
 ### 2.3 CI/CD
 
-![Cicd] (readme-assets/cicd.png)
+![Cicd](readme-assets/cicd.png)
 
 Para esta aplicação utilizaria as seguintes ferramentas para um pipeline
 Continuous Integration Continuous Delivery:
