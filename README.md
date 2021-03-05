@@ -18,6 +18,8 @@ No diretório raiz do projeto
 
 ![Running](readme-assets/running.gif)
 
+Após terminar, acesse http://localhost:3001/
+
 ## Nível 2
 
 ### 2.1 Arquitetura de alta disponibilidade proposta:
