@@ -49,19 +49,21 @@ horizontal da aplicação por meio de uma entidade chamada Auto-Scale. Esta
 entidade pode ser utilizada tanto em um contexto de Pods de uma aplicação
 quanto para nós dentro do cluster K8s. Um exemplo de configuração:
 
-    apiVersion: autoscaling/v1
-    kind: HorizontalPodAutoscaler
-    metadata:
-      name: {{ app_name }}
-      namespace: {{ namespaces[env] }}
-    spec:
-      maxReplicas: {{ max_replica[env] }}
-      minReplicas: {{ min_replica[env] }}
-      scaleTargetRef:
-        apiVersion: apps/v1
-        kind: Deployment
-        name: {{ app_name }}
-      targetCPUUtilizationPercentage: 50
+```
+apiVersion: autoscaling/v1
+kind: HorizontalPodAutoscaler
+metadata:
+  name: {{ app_name }}
+  namespace: {{ namespaces[env] }}
+spec:
+  maxReplicas: {{ max_replica[env] }}
+  minReplicas: {{ min_replica[env] }}
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: {{ app_name }}
+  targetCPUUtilizationPercentage: 50
+```
 
 No caso, o auto-scale está baseado no uso de CPU dos Pods de um determinado
 Deployment. Caso o uso de CPU estiver acima do valor target, será feito o
@@ -84,81 +86,84 @@ que tenha suporte a WebHooks para a próxima etapa (exemplo Webhook no [Bitbucke
 - Build & Test: A escolha foi o Jenkins, pela flexibilidade e suporte a vários
 plugins. Uma pipeline poderia ser escrita desta forma:
 
-    pipeline {
-        agent any
-        options {
-            timeout(time: 15, unit: 'MINUTES')
-        }
-        environment {
-            APP_NAME = 'app_name'
-        }
-        stages {
-            stage ('Preparation') {
-                steps {
-                    script {
-                        buildName "$APP_NAME-$BRANCH_NAME-$BUILD_NUMEBER"
-                        git(
-                            url: "repo_url"
-                            credentialsId: "repo_credentials"
-                            branch: "$BRANCH_NAME"
-                        )
-                    }
+```
+pipeline {
+    agent any
+    options {
+        timeout(time: 15, unit: 'MINUTES')
+    }
+    environment {
+        APP_NAME = 'app_name'
+    }
+    stages {
+        stage ('Preparation') {
+            steps {
+                script {
+                    buildName "$APP_NAME-$BRANCH_NAME-$BUILD_NUMEBER"
+                    git(
+                        url: "repo_url"
+                        credentialsId: "repo_credentials"
+                        branch: "$BRANCH_NAME"
+                    )
                 }
             }
-            stage ('Build') {
-                steps {
-                    script {
-                        echo 'Building...'
-                        dockerImage = docker.build("$DOCKER_REGISTRY:$DOCKER_TAG", "-f path/to/dockerfile .")
-                    }
+        }
+        stage ('Build') {
+            steps {
+                script {
+                    echo 'Building...'
+                    dockerImage = docker.build("$DOCKER_REGISTRY:$DOCKER_TAG", "-f path/to/dockerfile .")
                 }
             }
-            stage ('Test') {
-                when {
-                    expression { params.SKIP_TESTS != 'TRUE' }
-                }
-                steps {
-                    script {
-                        echo 'Testing...'
-                        dockerImage.inside('-v /tmp:/tmp') {
-                            // Run tests here
-                        }
+        }
+        stage ('Test') {
+            when {
+                expression { params.SKIP_TESTS != 'TRUE' }
+            }
+            steps {
+                script {
+                    echo 'Testing...'
+                    dockerImage.inside('-v /tmp:/tmp') {
+                        // Run tests here
+                    }
 
-                        // Sonar Code Analysis
-                        def scannerHome = tool 'SonarQubeScanner'
-                        withSonarQubeEnv('SonarQube') {
-                            sh """
-                                ${scannerHome}/bin/sonar-scanner \
-                                -Dsonar.projectKey=${BRANCH_NAME}
-                            """
-                        }
-                        timeout(time: 5, unit: 'MINUTES') {
-                            waitForQualityGate abortPipeline: true
-                        }
+                    // Sonar Code Analysis
+                    def scannerHome = tool 'SonarQubeScanner'
+                    withSonarQubeEnv('SonarQube') {
+                        sh """
+                            ${scannerHome}/bin/sonar-scanner \
+                            -Dsonar.projectKey=${BRANCH_NAME}
+                        """
                     }
-                }
-            }
-            stage ('Push Image') {
-                steps {
-                    script {
-                        docker.withRegistry(REGISTRY_URL, REGISTRY_CREDENTIAL) {
-                            dockerImage.push()
-                        }
+                    timeout(time: 5, unit: 'MINUTES') {
+                        waitForQualityGate abortPipeline: true
                     }
                 }
             }
         }
-        post {
-            failure {
-                // Send e-mail
+        stage ('Push Image') {
+            steps {
+                script {
+                    docker.withRegistry(REGISTRY_URL, REGISTRY_CREDENTIAL) {
+                        dockerImage.push()
+                    }
+                }
             }
         }
     }
+    post {
+        failure {
+            // Send e-mail
+        }
+    }
+}
+```
 
 - Deploy: Script Ansible-Playbook com Openshift provisionando Deployments no
 Kubernetes. Template jinja2 para criar dinamicamente os documentos de
 provisionamento.
 
+```
     .
     ├── tasks
     │   └── main.yaml
@@ -175,6 +180,7 @@ provisionamento.
         ├── main.yaml
         ├── prod_env_vars.json
         └── qa_env_vars.json
+```
 
 - Operador e Monitoramento: Utilização de ferramentas populares no K8s como
 Kibana, Prometheus e visualização geral com Grafana. Fluentd como agregador de
