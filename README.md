@@ -28,11 +28,11 @@ Esta arquitetura representa uma arquitetura de microserviços dentro de um
 orquestrador Kubernetes. Cada elemento colorido representa uma entidade no K8s.
 Temos então de cima para baixo:
 
-- Ingress: ponto de entrada para o orquestrador Kubernetes, gerenciado por um
+- **Ingress**: ponto de entrada para o orquestrador Kubernetes, gerenciado por um
 Ingress Controller (nginx, traefik, HAProxy)
-- Services: tanto para aplicação de frontend quanto backend, pois queremos
+- **Services**: tanto para aplicação de frontend quanto backend, pois queremos
 gerenciar a Alta Disponibilidade dessas aplicações.
-- Pods: as entidades do K8s responsáveis por rodar nossas aplicações,
+- **Pods**: as entidades do K8s responsáveis por rodar nossas aplicações,
     gerenciados por Deployments
 
 Utilizando esta tecnologia, temos uma forma de oferecer o serviço com Alta
@@ -75,15 +75,15 @@ scale-down da aplicação em certos horários.
 
 ### 2.3 CI/CD
 
-![cicd] (readme-assets/cicd.png)
+![Cicd] (readme-assets/cicd.png)
 
 Para esta aplicação utilizaria as seguintes ferramentas para um pipeline
 Continuous Integration Continuous Delivery:
 
-- Code: poderia ser qualquer uma das três Github, Bitbucket, GitLab contanto
+- **Code**: poderia ser qualquer uma das três Github, Bitbucket, GitLab contanto
 que tenha suporte a WebHooks para a próxima etapa (exemplo Webhook no [Bitbucket](https://medium.com/@nishizuka23/build-jenkins-pipelines-via-bitbucket-hooks-f92435e55f55))
 
-- Build & Test: A escolha foi o Jenkins, pela flexibilidade e suporte a vários
+- **Build & Test**: A escolha foi o Jenkins, pela flexibilidade e suporte a vários
 plugins. Uma pipeline poderia ser escrita desta forma:
 
 ```
@@ -159,7 +159,7 @@ pipeline {
 }
 ```
 
-- Deploy: Script Ansible-Playbook com Openshift provisionando Deployments no
+- **Deploy**: Script Ansible-Playbook com Openshift provisionando Deployments no
 Kubernetes. Template jinja2 para criar dinamicamente os documentos de
 provisionamento.
 
@@ -182,7 +182,7 @@ provisionamento.
         └── qa_env_vars.json
 ```
 
-- Operador e Monitoramento: Utilização de ferramentas populares no K8s como
+- **Operador e Monitoramento**: Utilização de ferramentas populares no K8s como
 Kibana, Prometheus e visualização geral com Grafana. Fluentd como agregador de
 logs. Todos eles dentro de um Cluster k8s gerenciado via Kubernetes-Dashboard.
 
